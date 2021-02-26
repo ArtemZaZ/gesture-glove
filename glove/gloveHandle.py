@@ -1,6 +1,4 @@
 import socket
-import struct
-
 import serial
 import threading
 from glove import proto
@@ -57,11 +55,39 @@ class GloveHandle(threading.Thread):
         self._eventMaster.append(self._eventDict["DEFORMATION_FRAME"])
         self._eventMaster.start()
 
-        self._buffer = bytearray(b'')
-        self._readingThread = threading.Thread(target=self.__fillBuffer, daemon=True)
+        self._newFrameLock = False  # нужны, если включена блокировка потоков (nonBlocking=False)
+        self._imuFrameLock = False
+        self._deformationFrameLock = False
 
         self._port = None
         self._sock = None
+
+    def newFrameDecorator(self, frame):
+        """ decorator """
+
+        def wrapper(*args, **kwargs):
+            frame(*args, **kwargs)
+            self._newFrameLock = False
+
+        return wrapper
+
+    def imuFrameDecorator(self, frame):
+        """ decorator """
+
+        def wrapper(*args, **kwargs):
+            frame(*args, **kwargs)
+            self._imuFrameLock = False
+
+        return wrapper
+
+    def deformationFrameDecorator(self, frame, ):
+        """ decorator """
+
+        def wrapper(*args, **kwargs):
+            frame(*args, **kwargs)
+            self._deformationFrameLock = False
+
+        return wrapper
 
     def open(self):
         """ Подключение к ресурсу source """
@@ -74,55 +100,36 @@ class GloveHandle(threading.Thread):
         else:
             raise IOError("Указан некорректный источник данных")
 
-    def __fillBuffer(self):
-        while not self.__exit:
-            if self._sourceConfig.sourceType is Sources.USB_TTL:
-                self._buffer.extend(self._port.read(20))
-            elif self._sourceConfig.sourceType is Sources.BLUETOOTH:
-                self._buffer.extend(self._sock.recv(1024))
-            else:
-                raise IOError("Не указан источник данных")
+    def __readByte(self):
+        """ прочитать байт с ресурса """
+        if self._sourceConfig.sourceType is Sources.USB_TTL:
+            return self._port.read()
+        elif self._sourceConfig.sourceType is Sources.BLUETOOTH:
+            return self._sock.recv(1)
+        else:
+            raise IOError("Не указан источник данных")
+
+    def __readByteArray(self, size):
+        if self._sourceConfig.sourceType is Sources.USB_TTL:
+            return self._port.read(size)
+        elif self._sourceConfig.sourceType is Sources.BLUETOOTH:
+            out = b''
+            for i in range(size):
+                out += self._sock.recv(1)
+            return out
+        else:
+            raise IOError("Не указан источник данных")
 
     def __readPackage(self):
         """ прочитать сообщение с ресурса """
-        try:
-            #print("1: ", self._buffer)
-            startInd = self._buffer.index(proto.protocolConfig["startBytes"])
-            del self._buffer[:startInd]
-            if startInd != 0:
-                print("В процессе чтения было отброшено: %d байт", startInd)
-            #print("2: ", self._buffer, startInd, )
-            frame = self._buffer[len(proto.protocolConfig["startBytes"]):]
-            if len(frame) < proto.headSize:
-                return
-            #print("3: ", frame)
-            #print("4: ", frame[:proto.headSize])
-            desc, crc = struct.unpack(proto.headFormat, frame[:proto.headSize])
-            frame = frame[proto.headSize:]
-            #print("5: ", desc, crc)
-            fmt = proto.protocolFormatDescription[desc]
-            #print("6: ", fmt)
-            packageSize = struct.calcsize(fmt)
-            #print("7: ", packageSize)
-            if len(frame) < packageSize:
-                return
-            #print("8: ", frame[:packageSize])
-            data = struct.unpack(fmt, frame[:packageSize])
-            del self._buffer[: len(proto.protocolConfig["startBytes"]) + proto.headSize + packageSize]
-            #print("9: ", self._buffer)
-            if proto.check(crc, data):
-                self.__pushHandlers((desc, crc), data)
-            else:
-                print("В процессе чтения был отброшен пакет")
-        except ValueError:
-            return
 
-    def __pushHandlers(self, head, data):
-        self._eventDict["FRAME"].push(head, data)
+        head, data = proto.readPackage(self.__readByteArray)
+
         if head[0] == 0:  # если формат данных
-            self._eventDict["IMU_FRAME"].push(data)
+            self._eventDict["IMU_FRAME"]._f(data)
         elif head[0] == 1:
-            self._eventDict["DEFORMATION_FRAME"].push(data)
+            self._eventDict["DEFORMATION_FRAME"]._f(data)
+
 
     def connect(self, toEvent, foo):  # ф-ия подключения обработчика события по имени события
         event = self._eventDict.get(toEvent)
@@ -131,7 +138,6 @@ class GloveHandle(threading.Thread):
         event.connect(foo)
 
     def run(self):
-        self._readingThread.start()
         while not self.__exit:
             self.__readPackage()
 
@@ -142,49 +148,23 @@ class GloveHandle(threading.Thread):
         elif self._sourceConfig.sourceType is Sources.BLUETOOTH:
             self._sock.close()
 
-    def newFrameDecorator(self, frame):
-        """ decorator """
-
-        def wrapper(*args, **kwargs):
-            frame(*args, **kwargs)
-
-        return wrapper
-
-    def imuFrameDecorator(self, frame):
-        """ decorator """
-
-        def wrapper(*args, **kwargs):
-            frame(*args, **kwargs)
-
-        return wrapper
-
-    def deformationFrameDecorator(self, frame, ):
-        """ decorator """
-
-        def wrapper(*args, **kwargs):
-            frame(*args, **kwargs)
-
-        return wrapper
-
 
 if __name__ == '__main__':
-    glove = GloveHandle(SourceConfig(Sources.USB_TTL, portName="COM7", baudrate=115200))
+    glove = GloveHandle(SourceConfig(Sources.USB_TTL, portName="COM7", baudrate=115200), nonBlocking=True)
 
 
     @glove.imuFrameDecorator
     def imuFrame(data):
-        pass
-        #print("IMU data: ", data)
+        print("IMU data: ", data)
         #time.sleep(1)
 
 
     @glove.deformationFrameDecorator
     def deformationFrame(data):
-        pass
-        #print("deformation data: ", data)
+        print("deformation data: ", data)
 
 
-    glove.connect("FRAME", glove.newFrameDecorator(lambda head, data: print(len(glove._buffer))#print("FRAME:", data)
+    glove.connect("FRAME", glove.newFrameDecorator(lambda head, data: print("FRAME:", data)
                                                    ))
     glove.connect("IMU_FRAME", imuFrame)
     glove.connect("DEFORMATION_FRAME", deformationFrame)
