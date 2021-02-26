@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from numpy.linalg import norm
 
 
 def LPFilterIterator(rawIn, oldFilteredVal, Kp):
@@ -8,82 +9,49 @@ def LPFilterIterator(rawIn, oldFilteredVal, Kp):
 
 class MagvikFilter:
     """ фильтр Маджвика, скопирован из си, потом оптимизировать """
-    def __init__(self, betta=0.9):
-        self.betta = betta
-        self._qw = 1
-        self._qx = 0
-        self._qy = 0
-        self._qz = 0
+    def __init__(self, beta=1):
+        self.beta = beta
+        self._q = np.array([1, 0, 0, 0])
 
     def reset(self):
         """ Сброс фильтра """
-        self._qw = 1
-        self._qx = 0
-        self._qy = 0
-        self._qz = 0
-
-    def getAngle(self, q=None):
-        if q is None:
-            qw, qx, qy, qz = self._qw, self._qx, self._qy, self._qz
-        else:
-            qw, qx, qy, qz = q
-        yaw = math.atan2(2 * (qw * qz + qx * qy), qx * qx + qw * qw - qz * qz - qy * qy) * (180 / math.pi)
-        pitch = math.asin(2 * (qx * qz - qw * qy)) * (180 / math.pi)
-        roll = math.atan2(2 * (qw * qx + qy * qz), qz * qz - qy * qy - qx * qx + qw * qw) * (180 / math.pi)
-        return yaw, pitch, roll
-
-
-    """
-    def getAngle(self):
-        qw, qx, qy, qz = self._qw, self._qx, self._qy, self._qz
-        yaw = math.atan2(2 * (qx * qy - qw * qz), 2*qw * qw + 2*qx * qx - 1) * (180 / math.pi)
-        pitch = - math.asin(2 * (qx * qz + qw * qy)) * (180 / math.pi)
-        roll = math.atan2(2 * (qy * qz - qw * qx), 2*qw * qw + 2*qz * qz - 1) * (180 / math.pi)
-        return yaw, pitch, roll
-    """
+        self._q = np.array([1, 0, 0, 0])
 
     def getQuat(self):
-        return np.array([self._qw, self._qx, self._qy, self._qz])
+        return self._q
 
     def update(self, ax, ay, az, wx, wy, wz, dt):
-        if (ax != 0) and (ay != 0) and (az != 0):
-            qw, qx, qy, qz = self._qw, self._qx, self._qy, self._qz
-            norm = (ax * ax + ay * ay + az * az) ** 0.5
-            ax = ax / norm
-            ay = ay / norm
-            az = az / norm
+        q = self._q
 
-            temp1 = qx * qx + qy * qy
-            temp2 = qz * qz + qw * qw - 1 + 2 * temp1 + az
+        gyroscope = np.array([wx, wy, wz], dtype=float).flatten()
+        accelerometer = np.array([ax, ay, az], dtype=float).flatten()
 
-            qHatDotw = 4 * qw * temp1 + 2 * (qy * ax - qx * ay)
-            qHatDotx = 4 * qx * temp2 - 2 * (qz * ax + qw * ay)
-            qHatDoty = 4 * qy * temp2 + 2 * (qw * ax - qz * ay)
-            qHatDotz = 4 * qz * temp1 - 2 * (qx * ax + qy * ay)
+        if norm(accelerometer) is 0:
+            raise ValueError("accelerometer is zero")
+        accelerometer /= norm(accelerometer)
 
-            norm = (qHatDotw * qHatDotw + qHatDotx * qHatDotx + qHatDoty * qHatDoty + qHatDotz * qHatDotz) ** 0.5
-            qHatDotw /= norm
-            qHatDotx /= norm
-            qHatDoty /= norm
-            qHatDotz /= norm
+        f = np.array([
+            2 * (q[1] * q[3] - q[0] * q[2]) - accelerometer[0],
+            2 * (q[0] * q[1] + q[2] * q[3]) - accelerometer[1],
+            2 * (0.5 - q[1] ** 2 - q[2] ** 2) - accelerometer[2]
+        ])
+        j = np.array([
+            [-2 * q[2], 2 * q[3], -2 * q[0], 2 * q[1]],
+            [2 * q[1], 2 * q[0], 2 * q[3], 2 * q[2]],
+            [0, -4 * q[1], -4 * q[2], 0]
+        ])
+        step = j.T.dot(f)
+        step /= norm(step)  # normalise step magnitude
 
-            qDotOmegaw = -0.5 * (qx * wx + qy * wy + qz * wz)
-            qDotOmegax = 0.5 * (qw * wx + qy * wz - qz * wy)
-            qDotOmegay = 0.5 * (qw * wy - qx * wz + qz * wx)
-            qDotOmegaz = 0.5 * (qw * wz + qx * wy - qy * wx)
+        qw = np.array([0, *gyroscope])
+        wd = q[0] * qw[0] - q[1] * qw[1] - q[2] * qw[2] - q[3] * qw[3]
+        xd = q[0] * qw[1] + q[1] * qw[0] + q[2] * qw[3] - q[3] * qw[2]
+        yd = q[0] * qw[2] - q[1] * qw[3] + q[2] * qw[0] + q[3] * qw[1]
+        zd = q[0] * qw[3] + q[1] * qw[2] - q[2] * qw[1] + q[3] * qw[0]
 
-            qw += (qDotOmegaw - self.betta * qHatDotw) * dt
-            qx += (qDotOmegax - self.betta * qHatDotx) * dt
-            qy += (qDotOmegay - self.betta * qHatDoty) * dt
-            qz += (qDotOmegaz - self.betta * qHatDotz) * dt
+        qdot = np.array([wd, xd, yd, zd]) * 0.5 - self.beta * step.T
 
-            norm = (qw * qw + qx * qx + qy * qy + qz * qz) ** 0.5
-            qw /= norm
-            qx /= norm
-            qy /= norm
-            qz /= norm
+        # Integrate to yield quaternion
+        q = q + qdot * float(dt)
+        self._q = q / norm(q)
 
-            self._qw = qw
-            self._qx = qx
-            self._qy = qy
-            self._qz = qz

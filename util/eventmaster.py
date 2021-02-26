@@ -13,19 +13,19 @@ class Event:
     def __init__(self, name=None, foo=None):
         self._name = name  # имя события
         self._foo = foo  # функция-обработчик события
-        self.__f = lambda: None  # дополнительная переменная - хранение ссылки на обработчик события
+        self._f = lambda: None  # дополнительная переменная - хранение ссылки на обработчик события
         self._eventMaster = None    # ссылка на EventMaster, сделано для оптимизации
 
     def connect(self, foo):
         """ Установка обработчика события """
         if callable(foo):   # если привязывается ф-ия
-            self.__f = foo
+            self._f = foo
         else:
             raise TypeError("parameter must be a function")
 
     def push(self, *args):
         """ Вызов события """
-        self._foo = lambda: self.__f(*args)     # оборачиваем вызов ф-ии с параметрами в пустую ф-ию
+        self._foo = lambda: self._f(*args)     # оборачиваем вызов ф-ии с параметрами в пустую ф-ию
         if self._eventMaster:
             self._eventMaster.pull(self)
 

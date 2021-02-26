@@ -12,12 +12,11 @@ protocolFormatDescription = {   # описание форматов пакето
     1: '=6hh'    #
 }
 
-_headFormat = '=' + protocolConfig["formatDesc"] + protocolConfig["formatChecksum"]
-_headSize = struct.calcsize(_headFormat)
+headFormat = '=' + protocolConfig["formatDesc"] + protocolConfig["formatChecksum"]
+headSize = struct.calcsize(headFormat)
 
-
+"""
 def readPackage(readArrFun):
-    """ Чтения пакета по протоколу """
     try:
         temp = bytearray(len(protocolConfig["startBytes"]))
         while temp != protocolConfig["startBytes"]:  # ищем вхождение
@@ -33,7 +32,7 @@ def readPackage(readArrFun):
             return None
     except Exception as e:
         print("error proto: ", e.__repr__())
-
+"""
 
 def check(checksum, data):
     return True  # TODO: доделать

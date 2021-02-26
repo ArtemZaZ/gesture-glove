@@ -4,3 +4,4 @@ examples/
 venv/
 /*.py
 !testplotting.py
+!testmotion.py

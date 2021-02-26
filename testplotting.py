@@ -4,7 +4,7 @@ from util.extmath import *
 import numpy as np
 from vispy import app, scene
 from glove.gloveHandle import GloveHandle, SourceConfig, Sources
-from plotting.imuplotting import ImuPlotter
+from plotting.imuplotter import ImuPlotter
 from util.filers import MagvikFilter, LPFilterIterator
 
 glove = GloveHandle(SourceConfig(Sources.USB_TTL, portName="COM7", baudrate=115200), nonBlocking=True)
