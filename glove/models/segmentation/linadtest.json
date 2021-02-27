@@ -1,0 +1,11 @@
+{
+  "name": "key",
+  "activationList": [
+    "sqrt(k1^2 + k2^2 + k3^2)/norm([k1, k2, k3]) < 1",
+    "safepass(k4 > 4)",
+    "k4 < 3"
+  ],
+  "deactivationList": [
+    "kq = 0"
+  ]
+}
