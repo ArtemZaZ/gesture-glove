@@ -31,6 +31,9 @@ class LinadModel:
         self._isDeactivate = False
 
     def update(self, frame):
+        self.__resetLocals(self._activateLocals)
+        self.__resetLocals(self._deactivateLocals)
+
         self._activateLocals.update(frame)
         self._deactivateLocals.update(frame)
 
@@ -51,7 +54,6 @@ class LinadModel:
                 self._actualActivateRule = [True]*index + [False]*(len(self._actualActivateRule) - index)
                 self._isActivate = False
                 break
-            self.__resetLocals(self._activateLocals)
 
         for index, rule in enumerate(self._rules["deactivationList"]):
             if self._baseDeactivateRule >= index:
@@ -70,7 +72,6 @@ class LinadModel:
                 self._actualDeactivateRule = [True]*index + [False]*(len(self._actualDeactivateRule) - index)
                 self._isDeactivate = False
                 break
-            self.__resetLocals(self._deactivateLocals)
 
     def isActivate(self):
         return self._isActivate
@@ -106,17 +107,19 @@ if __name__ == '__main__':
     test = {
         "name": "key",
         "activationList": [
-            "x < 1",
-            "safepass(x < -1)",
+            "x < 6",
+            "safepass(x < 1)",
             "x > 3"
         ],
         "deactivationList": [
-            "x < 1",
-            "safepass(x < -1)",
+            "x < 6",
+            "safepass(x < 1)",
             "x > 3"
         ]
     }
+
     linad = LinadModel(rules=test)
+    """
     linad.update({"x": 2})
     print("A: ", linad._actualActivateRule)
     print("D: ", linad._actualDeactivateRule)
@@ -145,7 +148,38 @@ if __name__ == '__main__':
     print("A: ", linad._actualActivateRule)
     print("D: ", linad._actualDeactivateRule)
     print(linad.isActivate())
+    """
+    from pynput import keyboard
 
-    import pynput
+    def on_press(key):
+        try:
+            pass
+        except AttributeError:
+            print('special key {0} pressed'.format(
+                key))
+
+
+    def on_release(key):
+        if key == keyboard.Key.space:
+            linad.reset()
+            return None
+        if key == keyboard.Key.esc:
+            # Stop listener
+            return False
+        x = int(key.char)
+        print(x)
+        linad.update({"x": x})
+        print("A: ", linad._actualActivateRule)
+        print("D: ", linad._actualDeactivateRule)
+        print(linad.isActivate())
+
+
+
+    # Collect events until released
+    with keyboard.Listener(
+            on_press=on_press,
+            on_release=on_release) as listener:
+        listener.join()
+
 
 

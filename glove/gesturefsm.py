@@ -1,17 +1,17 @@
 
 class GestureStates:
     NotActivated = 0
-    Activated = 0
-    Deactivated = 0
+    Activated = 1
+    Deactivated = 2
 
 
 class GestureFsm:
-    def __init__(self):
+    def __init__(self, segmentation, dynamicModel=None, dynamicScope=None, handler=None):
         self._state = GestureStates.NotActivated
-        self._segmentationModel = None
-        self._dynamicScope = None
-        self._dynamicModel = None
-        self._raiseHandler = None
+        self._segmentationModel = segmentation
+        self._dynamicScope = dynamicScope
+        self._dynamicModel = dynamicModel
+        self._raiseHandler = handler
 
     def update(self, frame):
         if self._state is GestureStates.NotActivated:
