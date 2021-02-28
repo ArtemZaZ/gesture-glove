@@ -31,7 +31,7 @@ class GestureFsm:
 
         elif self._state is GestureStates.Deactivated:
             self._dynamicModel.update(frame)
-            self._raiseHandler(self._dynamicModel.classificate())
+            self._raiseHandler(self._dynamicModel.classify(self._dynamicScope))
             self._dynamicScope.reset()
             self._dynamicModel.reset()
             self._state = GestureStates.NotActivated
