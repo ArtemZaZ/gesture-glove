@@ -7,12 +7,12 @@ from glove.gloveHandle import GloveHandle, SourceConfig, Sources
 from plotting.imuplotter import ImuPlotter
 from util.filers import MagvikFilter, LPFilterIterator
 
-glove = GloveHandle(SourceConfig(Sources.USB_TTL, portName="COM7", baudrate=115200), nonBlocking=True)
+glove = GloveHandle(SourceConfig(Sources.USB_TTL, portName="COM10", baudrate=115200), nonBlocking=True)
 plotter = ImuPlotter(sampleInterval=0.002, timeWindow=5.)
 axgo = 0
 aygo = 0
 azgo = 0
-kp = 0.1
+kp = 0.2
 t = 0
 mag = MagvikFilter()
 
@@ -23,12 +23,13 @@ def imuFrame(data):
     global axgo, aygo, azgo
     ax = data[0] / 32768 * 4 + 0.015
     ay = data[1] / 32768 * 4 - 0.00
-    az = data[2] / 32768 * 4 - 0.07
+    az = data[2] / 32768 * 4 - 0.045
     wx = (np.pi / 180) * ((data[3] + 90) / 32768 * 500)
     wy = (np.pi / 180) * ((data[4] + 0) / 32768 * 500)
     wz = (np.pi / 180) * ((data[5] + 25) / 32768 * 500)
     tm = data[-1] / 1000
     t += tm
+    print(tm)
 
     mag.update(ax, ay, az, wx, wy, wz, tm)
     q = mag.getQuat()
@@ -42,6 +43,9 @@ def imuFrame(data):
     axg = LPFilterIterator(gla[0] * 9.8, axgo, kp)
     ayg = LPFilterIterator(gla[1] * 9.8, aygo, kp)
     azg = LPFilterIterator(gla[2] * 9.8, azgo, kp)
+    axgo = axg
+    aygo = ayg
+    azgo = azg
 
     plotter.addPoint(axg, ayg, azg, t)
 

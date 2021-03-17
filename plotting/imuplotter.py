@@ -13,15 +13,15 @@ class ImuPlotter:
 
         pg.setConfigOption('background', 'w')
         self._win = pg.GraphicsWindow(title="Test")  # creates a window
-        self._plot = self._win.addPlot(title="Realtime plot",
+        self._plot = self._win.addPlot(title="",
                                        background='w')  # creates empty space for the plot in the window
         self._plot.showGrid(x=True, y=True)
-        self._plot.setLabel('left', 'accel', 'm*s^2')
-        self._plot.setLabel('bottom', 'time', 's')
+        self._plot.setLabel('left', 'a, м/с^2')
+        self._plot.setLabel('bottom', 't, с')
 
-        self._xLine = self._plot.plot(pen=pg.mkPen(width=1, color='r'))  # create an empty "plot" (a curve to plot)
-        self._yLine = self._plot.plot(pen=pg.mkPen(width=1, color='b'))  # create an empty "plot" (a curve to plot)
-        self._zLine = self._plot.plot(pen=pg.mkPen(width=1, color='g'))  # create an empty "plot" (a curve to plot)
+        self._xLine = self._plot.plot(pen=pg.mkPen(width=4, color='r'))  # create an empty "plot" (a curve to plot)
+        self._yLine = self._plot.plot(pen=pg.mkPen(width=4, color='b'))  # create an empty "plot" (a curve to plot)
+        self._zLine = self._plot.plot(pen=pg.mkPen(width=4, color='g'))  # create an empty "plot" (a curve to plot)
 
         self._windowWidth = int(timeWindow/sampleInterval)  # width of the window displaying the curve
 

@@ -9,7 +9,7 @@ protocolConfig = {
 
 protocolFormatDescription = {   # описание форматов пакетов по дескриптору
     0: '=6hh',   #
-    1: '=6hh'    #
+    1: '=14B'    #
 }
 
 _headFormat = '=' + protocolConfig["formatDesc"] + protocolConfig["formatChecksum"]

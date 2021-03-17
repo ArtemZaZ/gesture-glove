@@ -26,7 +26,7 @@ class MagvikFilter:
         gyroscope = np.array([wx, wy, wz], dtype=float).flatten()
         accelerometer = np.array([ax, ay, az], dtype=float).flatten()
 
-        if norm(accelerometer) is 0:
+        if norm(accelerometer) == 0:
             raise ValueError("accelerometer is zero")
         accelerometer /= norm(accelerometer)
 

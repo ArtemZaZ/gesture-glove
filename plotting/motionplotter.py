@@ -9,7 +9,7 @@ from vispy.visuals import LinePlotVisual
 
 
 class MotionPlotter(scene.SceneCanvas):
-    def __init__(self, keys='interactive', size=(480, 360), **kwargs):
+    def __init__(self, keys='interactive', size=(640, 480), **kwargs):
         super().__init__(keys=keys, size=size, **kwargs)
         self.unfreeze()
         self._viewbox = self.central_widget.add_view(camera='turntable')

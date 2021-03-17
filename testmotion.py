@@ -1,8 +1,6 @@
 import sys
 import time
 
-from madgwick.madgwickahrs import MadgwickAHRS
-from madgwick.quaternion import Quaternion
 from util.extmath import *
 import numpy as np
 from vispy import app, scene
@@ -14,7 +12,7 @@ from multiprocessing import Process
 
 np.set_printoptions(suppress=True)
 
-output_filename = 'animation.gif'
+output_filename = 'animation3.gif'
 glove = GloveHandle(SourceConfig(Sources.USB_TTL, portName="COM7", baudrate=115200), nonBlocking=False)
 mplotter = MotionPlotter()
 axgo = 0
@@ -44,19 +42,19 @@ def imuFrame(data):
     global vx, vy, vz
     global sx, sy, sz
     global swing, twist
-    ax = data[0] / 32768 * 4 + 0.015
+    ax = data[0] / 32768 * 4 - 0.05
     ay = data[1] / 32768 * 4 - 0.00
-    az = data[2] / 32768 * 4 - 0.07
+    az = data[2] / 32768 * 4 - 0.045
     wx = (np.pi / 180) * ((data[3] + 90) / 32768 * 500)
     wy = (np.pi / 180) * ((data[4] + 0) / 32768 * 500)
-    wz = (np.pi / 180) * ((data[5] + 25) / 32768 * 500)
-    tm = float(data[-1]) / 1000
+    wz = (np.pi / 180) * ((data[5] + 30) / 32768 * 500)
+    tm = data[-1] / 1000
     t += tm
 
     mag.update(ax, ay, az, wx, wy, wz, tm)
     q = mag.getQuat()
-    qr = mulQuat(q, invQuat(qbase))
     swing, twist = decompositionSwingTwist(q, np.array([0, 0, 1]))
+    qr = mulQuat(q, invQuat(qbase))
 
     qinv = invQuat(q)
     gla = mulQuat(mulQuat(q, np.array([0, ax, ay, az])), qinv)
@@ -64,13 +62,13 @@ def imuFrame(data):
     gla[-1] -= 1
     gla[-1] = -gla[-1]
 
-    kp = 0.2
+    kp = 0.35
     axgo = LPFilterIterator(gla[0] * 9.8, axgo, kp)
     aygo = LPFilterIterator(gla[1] * 9.8, aygo, kp)
     azgo = LPFilterIterator(gla[2] * 9.8, azgo, kp)
 
-    tr = 0.2
-    kpv = 0.92
+    tr = 0.7
+    kpv = 0.80
 
     if abs(axgo) < tr:
         axgo = 0.0
@@ -110,8 +108,9 @@ def on_key_press(event):
     if event.text == '1':
         vx, vy, vz = 0, 0, 0
         sx, sy, sz = 0, 0, 0
-        qbase = mulQuat(q, invQuat(np.array([1, 0, 0, 0])))
-        qbase = mulQuat(qbase, swing)
+        #qbase = mulQuat(q, invQuat(np.array([1, 0, 0, 0])))
+        #qbase = mulQuat(qbase, swing)
+        mag.reset()
         mplotter.resetTransform()
     if event.text == '2':
         isSaving = not isSaving
@@ -141,11 +140,11 @@ def update(ev):
         image = mplotter.render()
         writer.append_data(image)
 
-    mplotter.transformCube((sx*100, sy*100, sz*100), qr)
+    mplotter.transformCube((sx*100, sy*100, -sz*100), qr)
     mplotter.update()
 
 
-timer = app.Timer(interval=0.08)
+timer = app.Timer(interval=0.05)
 timer.connect(update)
 timer.start()
 
