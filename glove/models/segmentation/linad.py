@@ -79,9 +79,6 @@ class LinadModel:
     def isDeactivate(self):
         return self._isDeactivate
 
-    def setRules(self, rules):
-        self._rules = rules
-
     def __resetLocals(self, d):
         d["isSafepass"] = False
         d["result"] = False
@@ -101,6 +98,22 @@ class LinadModel:
     def __deactivateWrapper(self, rule):
         self._deactivateLocals["result"] = rule
         return rule
+
+    @property
+    def rules(self):
+        return self._rules
+
+    @rules.setter
+    def rules(self, rules):
+        self._rules = rules
+
+    @property
+    def actualActivateRule(self):
+        return self._actualActivateRule
+
+    @property
+    def actualDeactivateRule(self):
+        return self._actualDeactivateRule
 
 
 if __name__ == '__main__':

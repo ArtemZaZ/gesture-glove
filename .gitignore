@@ -3,5 +3,5 @@ __pycache__/
 examples/
 venv/
 /*.py
-!testplotting.py
-!testmotion.py
+!visual/testplotting.py
+!visual/testmotion.py

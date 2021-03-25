@@ -12,8 +12,9 @@ from multiprocessing import Process
 
 np.set_printoptions(suppress=True)
 
-output_filename = 'animation3.gif'
-glove = GloveHandle(SourceConfig(Sources.USB_TTL, portName="COM7", baudrate=115200), nonBlocking=False)
+output_filename = '../animation3.gif'
+#glove = GloveHandle(SourceConfig(Sources.USB_TTL, portName="COM7", baudrate=115200), nonBlocking=False)
+glove = GloveHandle(SourceConfig(Sources.BLUETOOTH, port=1, host="00:21:13:04:d9:63"), nonBlocking=False)
 mplotter = MotionPlotter()
 axgo = 0
 aygo = 0
