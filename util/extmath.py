@@ -74,7 +74,7 @@ def angleByVectors(v1, v2):
     return np.arccos(np.dot(v1, v2) / (norm(v1) * norm(v2)))
 
 
-def angleFromQuat(self, q):
+def angleFromQuat(q):
     qw, qx, qy, qz = q
     yaw = math.atan2(2 * (qw * qz + qx * qy), qx * qx + qw * qw - qz * qz - qy * qy) * (180 / math.pi)
     pitch = math.asin(2 * (qx * qz - qw * qy)) * (180 / math.pi)

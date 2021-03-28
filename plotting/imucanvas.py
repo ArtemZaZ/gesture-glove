@@ -82,7 +82,7 @@ if __name__ == '__main__':
     import sys
     count = 0
 
-    canvas = ImuCanvas(bgcolor='w')
+    gloveCanvas = ImuCanvas(bgcolor='w')
 
     def addPoints(ev):
         global count
@@ -90,9 +90,9 @@ if __name__ == '__main__':
         x *= 1
         y *= 2
         z *= 3
-        canvas.addPoints([count, x], [count, y], [count, z])
+        gloveCanvas.addPoints([count, x], [count, y], [count, z])
         count += 0.02
-        canvas.updateData()
+        gloveCanvas.updateData()
 
     timer = app.Timer()
     timer.connect(addPoints)
