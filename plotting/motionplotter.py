@@ -9,8 +9,8 @@ from vispy.visuals import LinePlotVisual
 
 
 class MotionPlotter(scene.SceneCanvas):
-    def __init__(self, keys='interactive', size=(640, 480), **kwargs):
-        super().__init__(keys=keys, size=size, **kwargs)
+    def __init__(self, keys='interactive', size=(640, 480), show=True, **kwargs):
+        super().__init__(keys=keys, size=size, show=show, **kwargs)
         self.unfreeze()
         self._viewbox = self.central_widget.add_view(camera='turntable')
         self._baseAxis = visuals.XYZAxis(parent=self._viewbox.scene, width=5)
@@ -37,7 +37,6 @@ class MotionPlotter(scene.SceneCanvas):
         self._cubeAxis.transform = self._transform
 
         self.freeze()
-        self.show()
 
     def transformCube(self, t, q):
         quaternion = Quaternion(*q)

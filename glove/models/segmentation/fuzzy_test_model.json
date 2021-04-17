@@ -1,0 +1,41 @@
+{
+  "system": {
+    "name": "test",
+    "type": "mamdani",
+    "numInputs": 1,
+    "numOutputs": 1,
+    "numRules": 3,
+    "andMethod": "min",
+    "orMethod": "max",
+    "impMethod": "min",
+    "aggMethod": "max",
+    "defuzzMethod": "centroid"
+  },
+  "inputs": [
+    {
+      "name": "thumb_raw",
+      "range": [0, 1],
+      "Mfs": [
+        {"name": "0-30gr", "mfType": "gaussmf", "param": [0.1769, -1.388e-17]},
+        {"name": "30-60gr", "mfType": "gaussmf", "param": [0.1769, 0.5]},
+        {"name": "60-90gr", "mfType": "gaussmf", "param": [0.1769, 1]}
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "thumb_approx",
+      "range": [0, 90],
+      "Mfs": [
+        {"name": "0-30gr", "mfType": "zmf", "param": [0.36, 9.79915433403806]},
+        {"name": "30-60gr", "mfType": "gaussmf", "param": [14.3828068082601, 45]},
+        {"name": "60-90gr", "mfType": "smf", "param": [80.3911205073996, 90.2]}
+      ]
+    }
+  ],
+  "rules": [
+    {"weight": 1, "operation": "or", "ruleList": [1, 1]},
+    {"weight": 1, "operation": "or", "ruleList": [2, 2]},
+    {"weight": 1, "operation": "or", "ruleList": [3, 3]}
+  ]
+}

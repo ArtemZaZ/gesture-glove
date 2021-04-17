@@ -16,7 +16,9 @@ output_filename = '../glovecanvas.gif'
 gloveCanvas = GloveCanvas()
 
 #glove = GloveHandle(SourceConfig(Sources.USB_TTL, portName="COM7", baudrate=115200), nonBlocking=False)
-glove = GloveHandle(SourceConfig(Sources.BLUETOOTH, port=1, host="00:21:13:04:d9:63"), nonBlocking=False)
+#glove = GloveHandle(SourceConfig(Sources.BLUETOOTH, port=1, host="00:21:13:04:d9:63"), nonBlocking=False)
+glove = GloveHandle(SourceConfig(Sources.SIMULATION, data=bytearray(open("../dataprocessing/data/glovetest.rec", "rb").read())), nonBlocking=False)
+
 mag = MagvikFilter()
 angles = (0, 0, 0)
 flex = (0, 0, 0, 0, 0)
@@ -65,10 +67,10 @@ def update(ev):
     global writer
     global isSaving
     if isSaving:
-        image = canvas._canvas.render()
+        image = gloveCanvas._canvas.render()
         writer.append_data(image)
 
-    canvas.update(flex, angles)
+    gloveCanvas.update(flex, angles)
 
 
 timer = app.Timer(interval=0.1)

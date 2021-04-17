@@ -1,0 +1,18 @@
+{
+  "name": "flex_test",
+  "segmentation": {
+    "module": "fuzzy",
+    "activation": {
+      "type": "submodel",
+      "model_name": "flex",
+      "gesture_name": "fist"
+    },
+    "deactivation": {
+      "type": "submodel",
+      "model_name": "flex",
+      "gesture_name": "palm"
+    }
+  },
+  "dynamic": {}
+}
+

@@ -10,7 +10,7 @@ class BsTemplateGenerator:
         self._upLimit = None
         self._downLimit = None
 
-    def update(self, t, seqlist):
+    def fit(self, t, seqlist):
         self._rawSequences.append([np.array(t), np.array(seqlist)])
 
     def getProcSeq(self):
@@ -58,6 +58,7 @@ if __name__ == '__main__':
     import matplotlib
     import matplotlib.pyplot as plt
     import numpy as np
+    import pickle
 
 
     def plot(title, t, lseq):
@@ -80,10 +81,13 @@ if __name__ == '__main__':
         offset = np.random.random() * 2
         tm = scale * tb + offset
         t.append(tm)
-        bstg.update(tm, [data1[i], data2[i], data3[i]])  ####################
+        bstg.fit(tm, [data1[i], data2[i], data3[i]])  ####################
 
     x, proc = bstg.getProcSeq()  ####################
     _, bounds = bstg.getBounds()    ##############
+
+    #with open('../../../../dataprocessing/data/boundsec/bsmtest.pickle', 'xb') as f:
+    #    pickle.dump([x, bounds], f)
 
     #### plotting ####
     ptx = np.array(list(x) * len(data) * 3)

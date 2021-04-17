@@ -9,6 +9,7 @@ import time
 class Sources:
     USB_TTL = 0
     BLUETOOTH = 1
+    SIMULATION = 2
 
 
 class SourceConfig:
@@ -32,6 +33,15 @@ class SourceConfig:
                 self.port = kwargs['port']
             except KeyError:
                 raise KeyError("Не указан аттрибут 'port' ресурса")
+        elif sourceType is Sources.SIMULATION:
+            try:
+                self.data = kwargs['data']
+            except KeyError:
+                raise KeyError("Не указан аттрибут 'data' ресурса")
+            try:
+                self.frametime = kwargs['frametime']
+            except KeyError:
+                raise KeyError("Не указан аттрибут 'frametime' ресурса")
         else:
             raise AttributeError("Указан некорректный тип ресурса")
 
@@ -61,6 +71,9 @@ class GloveHandle(threading.Thread):
 
         self._port = None
         self._sock = None
+
+        self._data = None
+        self._frametime = None
 
     def newFrameDecorator(self, frame):
         """ decorator """
@@ -97,19 +110,24 @@ class GloveHandle(threading.Thread):
             # self._sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
             self._sock = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)  # on python 3.9
             self._sock.connect((self._sourceConfig.host, self._sourceConfig.port))
+        elif self._sourceConfig.sourceType is Sources.SIMULATION:
+            self._data = self._sourceConfig.data
+            self._frametime = self._sourceConfig.frametime
         else:
             raise IOError("Указан некорректный источник данных")
 
-    def __readByte(self):
+    def _readByte(self):
         """ прочитать байт с ресурса """
         if self._sourceConfig.sourceType is Sources.USB_TTL:
             return self._port.read()
         elif self._sourceConfig.sourceType is Sources.BLUETOOTH:
             return self._sock.recv(1)
+        elif self._sourceConfig.sourceType is Sources.SIMULATION:
+            return self._data.pop(0)
         else:
             raise IOError("Не указан источник данных")
 
-    def __readByteArray(self, size):
+    def _readByteArray(self, size):
         if self._sourceConfig.sourceType is Sources.USB_TTL:
             return self._port.read(size)
         elif self._sourceConfig.sourceType is Sources.BLUETOOTH:
@@ -117,19 +135,25 @@ class GloveHandle(threading.Thread):
             for i in range(size):
                 out += self._sock.recv(1)
             return out
+        elif self._sourceConfig.sourceType is Sources.SIMULATION:
+            temp = self._data[:size]
+            del self._data[:size]
+            return temp
         else:
             raise IOError("Не указан источник данных")
 
     def __readPackage(self):
         """ прочитать сообщение с ресурса """
 
-        head, data = proto.readPackage(self.__readByteArray)
+        head, data = proto.readPackage(self._readByteArray)
 
         if head[0] == 0:  # если формат данных
             self._eventDict["IMU_FRAME"]._f(data)
         elif head[0] == 1:
             self._eventDict["DEFORMATION_FRAME"]._f(data)
 
+        if self._sourceConfig.sourceType is Sources.SIMULATION:
+            time.sleep(self._frametime)
 
     def connect(self, toEvent, foo):  # ф-ия подключения обработчика события по имени события
         event = self._eventDict.get(toEvent)
@@ -147,11 +171,13 @@ class GloveHandle(threading.Thread):
             self._port.close()
         elif self._sourceConfig.sourceType is Sources.BLUETOOTH:
             self._sock.close()
+        elif self._sourceConfig.sourceType is Sources.SIMULATION:
+            pass
 
 
 if __name__ == '__main__':
     glove = GloveHandle(SourceConfig(Sources.USB_TTL, portName="COM7", baudrate=115200), nonBlocking=True)
-
+    #glove = GloveHandle(SourceConfig(Sources.SIMULATION, data=bytearray(b"\xaa\xaa\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10")))
 
     @glove.imuFrameDecorator
     def imuFrame(data):
