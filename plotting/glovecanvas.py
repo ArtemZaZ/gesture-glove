@@ -1,5 +1,5 @@
 import sys
-
+import colorsys
 from vispy import scene, app
 from vispy.scene import Text
 from vispy.io import read_png
@@ -30,11 +30,21 @@ class GloveCanvas:
         self._canvas.show()
 
     def update(self, flex, angle):
+        d = [0.4, 0]
         self._thumb.text = "flex:\n%s" % str(flex[0])
+        self._thumb.color = colorsys.hsv_to_rgb((flex[0]/90)*(d[1]-d[0])+d[0], 0.93, 0.8)
+
         self._index.text = "flex:\n%s" % str(flex[1])
+        self._index.color = colorsys.hsv_to_rgb((flex[1] / 90) * (d[1] - d[0]) + d[0], 0.93, 0.8)
+
         self._middle.text = "flex:\n%s" % str(flex[2])
+        self._middle.color = colorsys.hsv_to_rgb((flex[2] / 90) * (d[1] - d[0]) + d[0], 0.93, 0.8)
+
         self._ring.text = "flex:\n%s" % str(flex[3])
+        self._ring.color = colorsys.hsv_to_rgb((flex[3] / 90) * (d[1] - d[0]) + d[0], 0.93, 0.8)
+
         self._little.text = "flex:\n%s" % str(flex[4])
+        self._little.color = colorsys.hsv_to_rgb((flex[4] / 90) * (d[1] - d[0]) + d[0], 0.93, 0.8)
 
         self._yaw.text = str(angle[0])
         self._pitch.text = str(angle[1])

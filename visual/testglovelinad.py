@@ -41,11 +41,12 @@ glove = GloveHandle(SourceConfig(Sources.SIMULATION, data=bytearray(open("../dat
 mag = MagvikFilter()
 angles = (0, 0, 0)
 flex = (0, 0, 0, 0, 0)
+t = 0
 
 
 #@glove.imuFrameDecorator
 def imuFrame(data):
-    global gloveCanvas, mag, angles
+    global gloveCanvas, mag, angles, t
 
     ax = data[0] / 32768 * 4 - 0.05
     ay = data[1] / 32768 * 4 - 0.00
@@ -54,6 +55,9 @@ def imuFrame(data):
     wy = (np.pi / 180) * ((data[4] + 0) / 32768 * 500)
     wz = (np.pi / 180) * ((data[5] + 30) / 32768 * 500)
     tm = data[-1] / 1000
+    t += tm
+    if t > 11.5:
+        return
 
     mag.update(ax, ay, az, wx, wy, wz, tm)
     q = mag.getQuat()
@@ -68,7 +72,9 @@ def imuFrame(data):
 
 #@glove.deformationFrameDecorator
 def deformationFrame(data):
-    global flex
+    global flex, t
+    if t > 11.5:
+        return
     flex = (min(max(0, -int((data[0] - 200) * 1.0)), 90),
             min(max(0, int((data[4] - 74) * 1.2)), 90),
             min(max(0, int((data[3] - 130) * 1.9)), 90),
@@ -89,7 +95,7 @@ isSaving = False
 
 
 def update(ev):
-    global flex, angles
+    global flex, angles, t
     global gloveCanvas, linad, linadCanvas
     global writer
     global isSaving
@@ -103,6 +109,7 @@ def update(ev):
                   "little_flex": flex[4], "yaw": angles[0], "pitch": angles[1], "roll": angles[2]})
     linadCanvas.update()
     gloveCanvas.update(flex, angles)
+    print(t)
 
 
 timer = app.Timer(interval=0.05)

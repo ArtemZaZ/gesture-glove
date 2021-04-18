@@ -11,11 +11,11 @@ import pickle
 #glove = GloveHandle(SourceConfig(Sources.USB_TTL, portName="COM10", baudrate=115200), nonBlocking=True)
 
 path = "data/gestures/"
-#fileind = "line/line(20)"
+fileind = "triangle/triangle(17)"
 #fileind = "log/log(18)"
 #fileind = "rect/rect(20)"
 #fileind = "triangle/triangle(20)"
-fileind = "v/v(20)"
+#fileind = "v/v(20)"
 rec = ".rec"
 procpath = "data/gestures/"
 procrec = ".proc"
@@ -67,8 +67,8 @@ def imuFrame(data):
     if t < 0.8:
         return
 
-    #if t > 6.2:
-    #    return
+    if t > 2.2:
+        return
 
     q = mag.getQuat()
     #swing, twist = decompositionSwingTwist(q, np.array([0, 0, -1]))
