@@ -86,7 +86,7 @@ if __name__ == '__main__':
     x, proc = bstg.getProcSeq()  ####################
     _, bounds = bstg.getBounds()    ##############
 
-    #with open('../../../../dataprocessing/data/boundsec/bsmtest.pickle', 'xb') as f:
+    #with open('../../../../dataprocessing/data/bound/bsmtest.pickle', 'xb') as f:
     #    pickle.dump([x, bounds], f)
 
     #### plotting ####

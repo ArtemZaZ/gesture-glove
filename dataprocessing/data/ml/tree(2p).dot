@@ -1,0 +1,12 @@
+digraph Tree {
+node [shape=box] ;
+0 [label="max_abs_abs_mean_Kz0 <= 0.548\nentropy = 1.575\nsamples = 31\nvalue = [10, 12, 9]\nclass = circle"] ;
+1 [label="entropy = 0.0\nsamples = 10\nvalue = [10, 0, 0]\nclass = line"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label="abs_mean_Kx0 <= 0.055\nentropy = 0.985\nsamples = 21\nvalue = [0, 12, 9]\nclass = circle"] ;
+0 -> 2 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+3 [label="entropy = 0.0\nsamples = 9\nvalue = [0, 0, 9]\nclass = rect"] ;
+2 -> 3 ;
+4 [label="entropy = 0.0\nsamples = 12\nvalue = [0, 12, 0]\nclass = circle"] ;
+2 -> 4 ;
+}

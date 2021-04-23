@@ -5,16 +5,18 @@ import numpy as np
 from swd import decompositionSwingTwist, mulQuat, invQuat
 
 bstg = BsTemplateGenerator(delta=0.05)
-seqNum = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-#seqNum = [20]
+seqNum = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+#seqNum = [4]
 
 path = "data/gestures/"
-#fileind = "line/line({num})"
+fileind = "line/line({num})"
 #fileind = "log/log({num})"
 #fileind = "rect/rect({num})"
-fileind = "triangle/triangle({num})"
+#fileind = "triangle/triangle({num})"
 #fileind = "v/v({num})"
 procrec = ".proc"
+outpath = "data/bound/{mt}.bst".format(mt=fileind.split("/")[0])
+isSave = True
 ag = []
 
 for num in seqNum:
@@ -62,6 +64,10 @@ for num in seqNum:
 
 _, proc = bstg.getProcSeq()
 x, bounds = bstg.getBounds()
+
+if isSave:
+    with open(outpath, 'xb') as f:
+        pickle.dump([x, bounds], f)
 
 fig0, ax = plt.subplots()
 ax.set_ylabel("$\Delta{S}/S_{max}$")

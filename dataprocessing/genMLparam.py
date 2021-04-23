@@ -5,9 +5,11 @@ from glove.models.dynamic.templategenerator.mlctemplate import MlcTemplateGenera
 from util.extmath import *
 import pandas as pd
 import seaborn as sns
-mlctg = MlcTemplateGenerator(part=10)
+
+parts = 2
+mlctg = MlcTemplateGenerator(part=parts)
 seqNum = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-#seqNum = [20]
+#seqNum = [7, 8, 10]
 
 motionTypes = {
     "line": 0,
@@ -24,8 +26,8 @@ path = "data/gestures/"
 #fileind = "triangle/triangle({num})"
 fileind = "v/v({num})"
 procrec = ".proc"
-outpath = "data/ml/{mt}.mlt".format(mt=fileind.split("/")[0])
-isSave = False
+outpath = "data/ml/{mt}({parts}p).mlt".format(mt=fileind.split("/")[0], parts=parts)
+isSave = True
 
 ag = []
 motionType = motionTypes[fileind.split("/")[0]]
@@ -77,19 +79,9 @@ for num in seqNum:
 
         mlctg.fit(t, [ax, ay, az])
 
+rawseq = mlctg.getRawSeq()
 x, proc = mlctg.getProcSeq()
 steps, params = mlctg.getParam()
-
-"""
-for seq in params:
-    for i in range(len(steps)):
-        del seq["max_abs_Kx" + str(i)]
-        del seq["max_abs_Ky" + str(i)]
-        del seq["max_abs_Kz" + str(i)]
-        del seq["mode_Kx" + str(i)]
-        del seq["mode_Ky" + str(i)]
-        del seq["mode_Kz" + str(i)]
-"""
 
 df = pd.DataFrame(params)
 #sns.heatmap(df.corr(), xticklabels=df.columns.values, yticklabels=df.columns.values)
@@ -97,24 +89,31 @@ df["mtype"] = [motionType] * len(seqNum)
 if isSave:
     df.to_pickle(outpath)
 
-"""
-keys = []
-for i in range(len(steps)):
-    keys.append("mode_Kx" + str(i))
-    keys.append("mode_Ky" + str(i))
-    keys.append("mode_Kz" + str(i))
-    keys.append("max_abs_Kx" + str(i))
-    keys.append("max_abs_Ky" + str(i))
-    keys.append("max_abs_Kz" + str(i))
-
-df = df.drop(keys, axis=1)
-"""
 print(df)
 df.info()
 df.hist()
 print(df.columns.values)
 
 fig0, ax = plt.subplots()
+ax.set_ylabel("$a, м/с^2$")
+ax.set_xlabel('t, c')
+count = 0
+
+for t, seq in rawseq:
+    color = ['r', 'g', 'b']
+    label = ["$a_x$", "$a_y$", "$a_z$"]
+    t = t - t[0]
+    for i in range(3):
+        if count == 0:
+            ax.plot(t, seq[i], color[i], label=label[i])
+        else:
+            ax.plot(t, seq[i], color[i])
+    count += 1
+#ax.plot([0, 1], [0, 0], 'k:')
+ax.legend()
+
+
+fig1, ax = plt.subplots()
 ax.set_ylabel("$\Delta{a}/a_{max}$")
 ax.set_xlabel('points')
 count = 0
@@ -132,14 +131,18 @@ ax.plot([0, 1], [0, 0], 'k:')
 
 ax.legend()
 
-
-a = steps[0]/steps[-1]
-b = steps[-1]/steps[-1]
+print(steps)
+try:
+    a = steps[0]/steps[-1]
+    b = steps[-1]/steps[-1]
+except ZeroDivisionError:
+    a = 0
+    b = 1
 stepSize = (b - a)/len(steps)
 
-procNum = 20
+procNum = 2
 
-fig1, ax = plt.subplots()
+fig2, ax = plt.subplots()
 
 ax.plot([0, 1], [0, 0], 'k:')
 for i in range(len(steps)+1):
@@ -151,13 +154,13 @@ for i in range(3):
     ax.plot(x, proc[procNum][i], color[i], label=label[i])
 ax.legend()
 
-fig2 = plt.figure()
+fig3 = plt.figure()
 
-ax_1 = fig2.add_subplot(3, 1, 1)
+ax_1 = fig3.add_subplot(3, 1, 1)
 ax_1.set(xlabel="points", ylabel="$K_x  params$")
-ax_2 = fig2.add_subplot(3, 1, 2)
+ax_2 = fig3.add_subplot(3, 1, 2)
 ax_2.set(xlabel="points", ylabel="$K_y  params$")
-ax_3 = fig2.add_subplot(3, 1, 3)
+ax_3 = fig3.add_subplot(3, 1, 3)
 ax_3.set(xlabel="points", ylabel="$K_z  params$")
 
 meanKx = []

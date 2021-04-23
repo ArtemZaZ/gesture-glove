@@ -4,7 +4,7 @@ import numpy as np
 
 
 class BoundingSequencesModel:
-    def __init__(self, rules=None):
+    def __init__(self, rules):
         self._rules = rules
 
         with open(self._rules["boundSecPath"], 'rb') as f:
@@ -27,7 +27,7 @@ class BoundingSequencesModel:
 if __name__ == '__main__':
     test = {
         "name": "bsmtest",
-        "boundSecPath": "../../../dataprocessing/data/boundsec/bsmtest.pickle"
+        "boundSecPath": "../../../dataprocessing/data/bound/bsmtest.pickle"
     }
 
     with open(test["boundSecPath"], 'rb') as f:

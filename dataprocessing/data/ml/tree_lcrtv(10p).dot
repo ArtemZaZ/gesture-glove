@@ -1,0 +1,16 @@
+digraph Tree {
+node [shape=box] ;
+0 [label="max_abs_abs_mean_Kx8 <= 0.166\nentropy = 1.992\nsamples = 42\nvalue = [12, 10, 11, 9]\nclass = line"] ;
+1 [label="max_abs_abs_mean_Kz5 <= 0.182\nentropy = 0.994\nsamples = 22\nvalue = [12, 10, 0, 0]\nclass = line"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label="entropy = 0.0\nsamples = 12\nvalue = [12, 0, 0, 0]\nclass = line"] ;
+1 -> 2 ;
+3 [label="entropy = 0.0\nsamples = 10\nvalue = [0, 10, 0, 0]\nclass = circle"] ;
+1 -> 3 ;
+4 [label="abs_mean_Kz1 <= 0.308\nentropy = 0.993\nsamples = 20\nvalue = [0, 0, 11, 9]\nclass = rect"] ;
+0 -> 4 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+5 [label="entropy = 0.0\nsamples = 9\nvalue = [0, 0, 0, 9]\nclass = triangle"] ;
+4 -> 5 ;
+6 [label="entropy = 0.0\nsamples = 11\nvalue = [0, 0, 11, 0]\nclass = rect"] ;
+4 -> 6 ;
+}

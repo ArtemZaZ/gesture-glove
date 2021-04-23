@@ -53,6 +53,9 @@ class MlcTemplateGenerator:
 
         return self._x, np.array(procSeq)
 
+    def getRawSeq(self):
+        return self._rawSequences
+
     def getParam(self):
         params = []
         x, proc = self.getProcSeq()
