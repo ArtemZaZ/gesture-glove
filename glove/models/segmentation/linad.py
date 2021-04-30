@@ -1,5 +1,5 @@
 import math
-
+import time
 
 _baseLocals = {"sqrt": math.sqrt,
                "_wrapper": None,
@@ -9,11 +9,14 @@ _baseLocals = {"sqrt": math.sqrt,
 
 
 class LinadModel:
-    def __init__(self, rules=None):
+    def __init__(self, rules):
         self._rules = rules
         self.reset()
+        self.t = time.time()
 
     def reset(self):
+        self._activationTime = [None] * len(self._rules["activationList"])
+        self._deactivationTime = [None] * len(self._rules["deactivationList"])
         self._actualActivateRule = [False] * len(self._rules["activationList"])
         self._actualDeactivateRule = [False] * len(self._rules["deactivationList"])
         self._baseActivateRule = -1  # если используется safepass
@@ -27,10 +30,15 @@ class LinadModel:
         self._activateLocals["_wrapper"] = self.__activateWrapper
         self._deactivateLocals["_wrapper"] = self.__deactivateWrapper
 
+        self._activateLocals.update({"t": self._activationTime})
+        self._deactivateLocals.update({"t": self._deactivationTime})
+
         self._isActivate = False
         self._isDeactivate = False
 
     def update(self, frame):
+        frame.update({"time": time.time()})
+
         self.__resetLocals(self._activateLocals)
         self.__resetLocals(self._deactivateLocals)
 
@@ -44,14 +52,20 @@ class LinadModel:
             exec("_wrapper({rule})".format(rule=rule), self._activateLocals)
 
             if self._activateLocals["result"] is True:
+                if self._actualActivateRule[index] is False:
+                    self._activationTime[index] = time.time()
+                    self._activateLocals["t"] = self._activationTime
+
                 if self._activateLocals["isSafepass"] is True:
                     self._baseActivateRule = index
+
                 self._actualActivateRule[index] = True
 
                 if False not in self._actualActivateRule:
                     self._isActivate = True
             else:
                 self._actualActivateRule = [True]*index + [False]*(len(self._actualActivateRule) - index)
+                self._activationTime = self._activationTime[:index] + [None]*(len(self._activationTime)-index)
                 self._isActivate = False
                 break
 
@@ -62,6 +76,10 @@ class LinadModel:
             exec("_wrapper({rule})".format(rule=rule), self._deactivateLocals)
 
             if self._deactivateLocals["result"] is True:
+                if self._actualDeactivateRule[index] is False:
+                    self._deactivationTime[index] = time.time()
+                    self._deactivateLocals["t"] = self._deactivationTime
+
                 if self._deactivateLocals["isSafepass"] is True:
                     self._baseDeactivateRule = index
                 self._actualDeactivateRule[index] = True
@@ -70,6 +88,7 @@ class LinadModel:
                     self._isDeactivate = True
             else:
                 self._actualDeactivateRule = [True]*index + [False]*(len(self._actualDeactivateRule) - index)
+                self._deactivationTime = self._deactivationTime[:index] + [None] * (len(self._deactivationTime) - index)
                 self._isDeactivate = False
                 break
 
@@ -121,11 +140,13 @@ if __name__ == '__main__':
         "name": "key",
         "activationList": [
             "x < 6",
+            "(time - t[0]) > 5",
             "safepass(x < 1)",
             "x > 3"
         ],
         "deactivationList": [
             "x < 6",
+            "(time - t[0]) > 5",
             "safepass(x < 1)",
             "x > 3"
         ]
@@ -183,7 +204,9 @@ if __name__ == '__main__':
         print(x)
         linad.update({"x": x})
         print("A: ", linad._actualActivateRule)
+        print("AT: ", linad._activationTime)
         print("D: ", linad._actualDeactivateRule)
+        print("DT: ", linad._deactivationTime)
         print(linad.isActivate())
 
 
