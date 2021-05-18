@@ -109,4 +109,7 @@ disp = ConfusionMatrixDisplay(confusion_matrix=conf,
                               display_labels=["drop", "line", "log", "rect", "triangle", "v"])
 print(conf)
 disp.plot()
+
+
+
 plt.show()

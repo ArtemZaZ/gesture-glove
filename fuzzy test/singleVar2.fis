@@ -1,0 +1,39 @@
+[System]
+Name='singleVar2'
+Type='mamdani'
+Version=2.0
+NumInputs=1
+NumOutputs=1
+NumRules=5
+AndMethod='min'
+OrMethod='max'
+ImpMethod='min'
+AggMethod='max'
+DefuzzMethod='centroid'
+
+[Input1]
+Name='input1'
+Range=[0 1]
+NumMFs=5
+MF1='low':'gaussmf',[0.02604 0]
+MF2='mlow':'gaussmf',[0.0122496264726529 0.086]
+MF3='middle':'gaussmf',[0.023287218663711 0.147]
+MF4='mhigh':'gaussmf',[0.0351 0.285771670190275]
+MF5='high':'gaussmf',[0.194823288226744 1]
+
+[Output1]
+Name='output1'
+Range=[0 90]
+NumMFs=5
+MF1='low':'gaussmf',[4.60573027006082 -2.22e-16]
+MF2='mlow':'gaussmf',[12.8655194483375 20]
+MF3='middle':'gaussmf',[14.3828068082601 45]
+MF4='mhigh':'gaussmf',[13.7992347467514 70]
+MF5='high':'gaussmf',[4.92893941181948 90]
+
+[Rules]
+1, 5 (1) : 1
+2, 4 (1) : 1
+3, 3 (1) : 1
+4, 2 (1) : 1
+5, 1 (1) : 1

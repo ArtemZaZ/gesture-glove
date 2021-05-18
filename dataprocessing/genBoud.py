@@ -9,14 +9,14 @@ seqNum = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 #seqNum = [4]
 
 path = "data/gestures/"
-fileind = "line/line({num})"
+#fileind = "line/line({num})"
 #fileind = "log/log({num})"
 #fileind = "rect/rect({num})"
 #fileind = "triangle/triangle({num})"
-#fileind = "v/v({num})"
+fileind = "v/v({num})"
 procrec = ".proc"
 outpath = "data/bound/{mt}.bst".format(mt=fileind.split("/")[0])
-isSave = True
+isSave = False
 ag = []
 
 for num in seqNum:
